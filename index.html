@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+  <title>Fingerprint Attendance Register</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #123b70;
+      font-size: 24px;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+
+    button {
+      background: #123b70;
+      color: white;
+      border: none;
+      border-radius: 6px;
+    }
+
+    #message {
+      margin-top: 15px;
+      overflow-wrap: anywhere;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Electronic Attendance Register</h1>
+
+    <h3>Register Student</h3>
+
+    <input id="studentName"
+           placeholder="Enter student's full name">
+
+    <input id="studentNumber"
+           placeholder="Enter student number">
+
+    <button onclick="registerStudent()">
+      Register Student
+    </button>
+
+    <h3>Mark Attendance</h3>
+
+    <input id="attendanceNumber"
+           placeholder="Enter student number">
+
+    <button onclick="markAttendance()">
+      Mark Attendance
+    </button>
+
+    <h3>Attendance Records</h3>
+    <div id="records"></div>
+
+    <p id="message"></p>
+  </div>
+
+  <script>
+    function getStudents() {
+      return JSON.parse(
+        localStorage.getItem("students") || "{}"
+      );
+    }
+
+    function registerStudent() {
+      const name =
+        document.getElementById("studentName")
+          .value.trim();
+
+      const number =
+        document.getElementById("studentNumber")
+          .value.trim();
+
+      if (!name || !number) {
+        alert("Enter the student's name and number.");
+        return;
+      }
+
+      const students = getStudents();
+
+      if (students[number]) {
+        alert("This student number is already registered.");
+        return;
+      }
+
+      students[number] = {
+        name: name,
+        number: number
+      };
+
+      localStorage.setItem(
+        "students",
+        JSON.stringify(students)
+      );
+
+      document.getElementById("message").textContent =
+        "Student registered successfully.";
+
+      document.getElementById("studentName").value = "";
+      document.getElementById("studentNumber").value = "";
+
+      showRecords();
+    }
+
+    function markAttendance() {
+      const number =
+        document.getElementById("attendanceNumber")
+          .value.trim();
+
+      const students = getStudents();
+
+      if (!students[number]) {
+        alert("Student not found. Register first.");
+        return;
+      }
+
+      const key = "attendance";
+      const attendance = JSON.parse(
+        localStorage.getItem(key) || "[]"
+      );
+
+      const today = new Date().toLocaleDateString();
+
+      const alreadyMarked = attendance.some(record =>
+        record.number === number &&
+        record.date === today
+      );
+
+      if (alreadyMarked) {
+        alert("Attendance has already been recorded today.");
+        return;
+      }
+
+      attendance.push({
+        name: students[number].name,
+        number: number,
+        date: today,
+        time: new Date().toLocaleTimeString(),
+        status: "Present"
+      });
+
+      localStorage.setItem(key, JSON.stringify(attendance));
+
+      document.getElementById("message").textContent =
+        "Demo attendance recorded. Fingerprint verification is not yet connected.";
+
+      document.getElementById("attendanceNumber").value = "";
+
+      showRecords();
+    }
+
+    function showRecords() {
+      const attendance = JSON.parse(
+        localStorage.getItem("attendance") || "[]"
+      );
+
+      const output = document.getElementById("records");
+
+      output.replaceChildren();
+
+      if (attendance.length === 0) {
+        output.textContent = "No attendance records yet.";
+        return;
+      }
+
+      attendance.forEach(record => {
+        const item = document.createElement("p");
+
+        item.textContent =
+          record.name + " (" + record.number + ") — " +
+          record.date + ", " + record.time +
+          " — " + record.status;
+
+        output.appendChild(item);
+      });
+    }
+
+    showRecords();
+  </script>
+</body>
+</html>
