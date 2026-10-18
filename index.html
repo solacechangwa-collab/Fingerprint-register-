@@ -206,3 +206,34 @@
   </script>
 </body>
 </html>
+
+<section id="biometric-section">
+  <h2>Biometric Fingerprint Attendance</h2>
+  <p>Register your phone's biometric credential to continue.</p>
+
+  <button id="fingerprintBtn" type="button">
+    Verify with Fingerprint
+  </button>
+
+  <p id="fingerprintStatus" role="status">
+    Ready to begin.
+  </p>
+</section>
+
+<script>
+document.getElementById("fingerprintBtn")
+  .addEventListener("click", async function () {
+    const status = document.getElementById("fingerprintStatus");
+
+    if (!window.isSecureContext ||
+        !window.PublicKeyCredential ||
+        !navigator.credentials) {
+      status.textContent =
+        "Fingerprint authentication is not supported here. Open the published HTTPS website in a compatible browser.";
+      return;
+    }
+
+    status.textContent =
+      "Your browser supports biometric credentials. A secure server is still needed to register and verify each student's identity.";
+  });
+</script>
